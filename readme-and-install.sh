@@ -37,7 +37,7 @@ The commands to install an OpenVPN server on OS X and iOS are:
 # Install everything here
 export OPENVPN_INSTALL=~/Backups/OpenVPN
 sudo -E mkdir -p $OPENVPN_INSTALL
-sudo rsync -va /Applications/Tunnelblick.app/Contents/Resources/easy-rsa-tunnelblick $OPENVPN_INSTALL
+sudo -E rsync -va /Applications/Tunnelblick.app/Contents/Resources/easy-rsa-tunnelblick $OPENVPN_INSTALL
 
 # configure easy-rsa
 sudo install -m 755 -B .orig ./vars $OPENVPN_INSTALL
@@ -51,18 +51,18 @@ install -m 600 ./openvpn-client-tun.ovpn $OPENVPN_INSTALL
 
 # create the keys
 cd $OPENVPN_INSTALL/easy-rsa-tunnelblick
-sudo mkdir -m go-rwx ./keys
-sudo touch ./keys/index.txt
-sudo echo 1 > ./keys/serial
-sudo . ./vars
-sudo ./clean-all
-sudo ./build-ca --pass
-sudo ./build-key-server server-domainname
+sudo -E mkdir -m go-rwx ./keys
+sudo -E touch ./keys/index.txt
+echo "1" | sudo tee -a ./keys/serial > /dev/null
+sudo -E . ./vars
+sudo -E ./clean-all
+sudo -E ./build-ca --pass
+sudo -E ./build-key-server server-domainname
 # choose a unique Common Name (CN) for each client
-sudo ./build-key client-domainname
-sudo ./build-dh
+sudo -E ./build-key client-domainname
+sudo -E ./build-dh
 # Use the openvpn executable
-sudo /Applications/Tunnelblick.app/Contents/Resources/openvpn/default --genkey --secret ./keys/ta.key
+sudo -E /Applications/Tunnelblick.app/Contents/Resources/openvpn/default --genkey --secret ./keys/ta.key
 
 # Notes:
 # Use the domain name "domainname.com" for the common name
@@ -79,9 +79,9 @@ sudo /Applications/Tunnelblick.app/Contents/Resources/openvpn/default --genkey -
 # ./sign-req client-domainname
  
 cd $OPENVPN_INSTALL/easy-rsa-tunnelblick/keys
-sudo openssl verify -CAfile ca.crt ca.crt
-sudo openssl verify -CAfile ca.crt server-domainname.crt
-sudo openssl verify -CAfile ca.crt client-domainname.crt
+sudo -E openssl verify -CAfile ca.crt ca.crt
+sudo -E openssl verify -CAfile ca.crt server-domainname.crt
+sudo -E openssl verify -CAfile ca.crt client-domainname.crt
 
 # Create .p12 client certificates/keys for iOS clients
 sudo openssl pkcs12 -export -in client-domainname.crt -inkey client-domainname.key -certfile ca.crt -name client-domainname -out client-domainname.p12
