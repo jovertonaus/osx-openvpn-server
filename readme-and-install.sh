@@ -46,15 +46,15 @@ sudo patch -p5 $OPENVPN_INSTALL/vars < /tmp/vars.patch
 rm /tmp/vars.patch
 
 # copy the Tunnelblick and client configuration
-rsync -va ./openvpn-server-tun.tblk $OPENVPN_INSTALL
-install -m 600 ./openvpn-client-tun.ovpn $OPENVPN_INSTALL
+sudo -E rsync -va ./openvpn-server-tun.tblk $OPENVPN_INSTALL
+sudo -E install -m 600 ./openvpn-client-tun.ovpn $OPENVPN_INSTALL
 
 # create the keys
 cd $OPENVPN_INSTALL/easy-rsa-tunnelblick
 sudo -E mkdir -m go-rwx ./keys
 sudo -E touch ./keys/index.txt
 echo "1" | sudo tee -a ./keys/serial > /dev/null
-sudo -E . ./vars
+. ./vars
 sudo -E ./clean-all
 sudo -E ./build-ca --pass
 sudo -E ./build-key-server server-domainname
@@ -88,12 +88,12 @@ sudo openssl pkcs12 -export -in client-domainname.crt -inkey client-domainname.k
 
 # Copy the necessary files to the .tblk directory
 # sudo cp -p ca.crt dh4096.pem server-domainname.crt server-domainname.key ta.key $OPENVPN_INSTALL/openvpn-server-tun.tblk
-sudo install -m 644 $OPENVPN_INSTALL/easy-rsa-tunnelblick/keys/ca.crt $OPENVPN_INSTALL/openvpn-server-tun.tblk
-sudo install -m 600 $OPENVPN_INSTALL/easy-rsa-tunnelblick/keys/dh4096.pem $OPENVPN_INSTALL/openvpn-server-tun.tblk
-sudo install -m 644 $OPENVPN_INSTALL/easy-rsa-tunnelblick/keys/server-domainname.crt $OPENVPN_INSTALL/openvpn-server-tun.tblk
-sudo install -m 600 $OPENVPN_INSTALL/easy-rsa-tunnelblick/keys/server-domainname.key $OPENVPN_INSTALL/openvpn-server-tun.tblk
-sudo install -m 600 $OPENVPN_INSTALL/easy-rsa-tunnelblick/keys/ta.key $OPENVPN_INSTALL/openvpn-server-tun.tblk
-sudo chmod -R $USER $OPENVPN_INSTALL/openvpn-server-tun.tblk
+sudo -E install -m 644 $OPENVPN_INSTALL/easy-rsa-tunnelblick/keys/ca.crt $OPENVPN_INSTALL/openvpn-server-tun.tblk
+sudo -E install -m 600 $OPENVPN_INSTALL/easy-rsa-tunnelblick/keys/dh4096.pem $OPENVPN_INSTALL/openvpn-server-tun.tblk
+sudo -E install -m 644 $OPENVPN_INSTALL/easy-rsa-tunnelblick/keys/server-domainname.crt $OPENVPN_INSTALL/openvpn-server-tun.tblk
+sudo -E install -m 600 $OPENVPN_INSTALL/easy-rsa-tunnelblick/keys/server-domainname.key $OPENVPN_INSTALL/openvpn-server-tun.tblk
+sudo -E install -m 600 $OPENVPN_INSTALL/easy-rsa-tunnelblick/keys/ta.key $OPENVPN_INSTALL/openvpn-server-tun.tblk
+sudo -E chmod -R $USER $OPENVPN_INSTALL/openvpn-server-tun.tblk
 
 sudo mkdir '/Library/Application Support/vpn'
 sudo install -m 755 osx-openvpn-server/enable-vpn-forward-nat.sh '/Library/Application Support/vpn'
@@ -105,7 +105,7 @@ sudo launchctl load -w /Library/LaunchDaemons/net.openvpn.enable-vpn-forward-nat
 # Configure the server's config.ovpn file to specifiy the server IP on the LAN
 # Edit $OPENVPN_INSTALL/openvpn-server-tun.tblk/config.ovpn to relect your NAT configuration
 sed -i '' -e 's/10.0.1.3/'`ifconfig en0 | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'`'/g' $OPENVPN_INSTALL/openvpn-server-tun.tblk/config.ovpn
-# Use config.ovpn.osxfortress with "git clone https://github.com/essandess/osxfortress" for
+# Use config.ovpn.osxfortress with "git clone https://github.com/essandess/osxfortess" for
 # secured, privacy-enhanced features on VPN clients
 sed -i '' -e 's/10.0.1.3/'`ifconfig en0 | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'`'/g' $OPENVPN_INSTALL/openvpn-server-tun.tblk/config.ovpn.osxfortress
 install -m 644 -B .orig $OPENVPN_INSTALL/openvpn-server-tun.tblk/config.ovpn.osxfortress $OPENVPN_INSTALL/openvpn-server-tun.tblk/config.ovpn
@@ -120,7 +120,7 @@ open -e $OPENVPN_INSTALL/openvpn-client-tun.ovpn	# or emacs, nano, vi, etc.
 
 # Mail yourself the encrypted .p12 file for use on iOS devices
 # On iOS, click on the email attachment and install this certificate in your Profiles
-uuencode $OPENVPN_INSTALL/keys/client-domainname.p12 client-domainname.p12 | mail -s "client-domainname.p12" myself@myemail.com
+uuencode $OPENVPN_INSTALL/easy-rsa-tunnelblick/keys/client-domainname.p12 client-domainname.p12 | mail -s "client-domainname.p12" myself@myemail.com
 
 # Install the OpenVPN app on iOS, then transfer the client OpenVPN file openvpn-client-tun.ovpn
 # to the OpenVPN app using iTunes, Device>Apps>File Sharing>Add...
